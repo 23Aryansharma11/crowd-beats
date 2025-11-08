@@ -31,5 +31,10 @@ export const auth = betterAuth({
       console.log(`[${level}] ${message}`, ...args);
     },
   },
+  session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    updateAge: 60 * 60 * 24 * 10, // 10 day
+    freshAge: 0,
+  },
   plugins: [nextCookies()],
 });

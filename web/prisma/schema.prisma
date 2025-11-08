@@ -73,3 +73,12 @@ model Verification {
 
   @@map("verification")
 }
+
+model Ratelimit {
+  id          String  @id
+  key         String?
+  count       Int?
+  lastRequest BigInt?
+
+  @@map("ratelimit")
+}
