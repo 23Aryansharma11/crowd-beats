@@ -25,6 +25,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  isPremiumUser Boolean @default(true)
+
   @@unique([email])
   @@map("user")
 }
