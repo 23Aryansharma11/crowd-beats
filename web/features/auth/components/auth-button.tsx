@@ -17,8 +17,8 @@ export function AuthButton() {
 			console.log(data.error.message);
 			return;
 		}
-		
-		router.push("/room")
+
+		router.push("/room");
 	};
 
 	return (

@@ -3,18 +3,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function RoomsLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  // check auth
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  // if user session is null redirect to login
-  if (!session) {
-    redirect("/login");
-  }
+	// check auth
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+	// if user session is null redirect to login
+	if (!session) {
+		redirect("/login");
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 }

@@ -4,6 +4,5 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function RoomPage() {
-
-  return <RoomClient />;
+	return <RoomClient />;
 }
