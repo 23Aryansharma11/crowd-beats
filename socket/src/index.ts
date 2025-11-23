@@ -82,7 +82,7 @@ ioServer.on("connection", (socket) => {
     console.log(
       `User ${userId} with socket id ${socket.id} joined room ${roomId}`
     );
-    socket.emit("joined-room", { roomId });
+    socket.emit("joined-room",  roomId );
   });
 });
 
