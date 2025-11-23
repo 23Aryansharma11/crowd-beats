@@ -1,5 +1,6 @@
 "use client";
 
+import { v4 as uuid } from "uuid";
 import { useEffect, useState } from "react";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -48,6 +49,9 @@ export function RoomClient() {
     socket.on("joined-room", (data) => {
       console.log("Joined room confirmed:", data);
     });
+    socket.on("add-song", (data) => {
+      console.log(data);
+    });
     socket.on("error", (error) => {
       console.error("Socket error:", error);
     });
@@ -60,13 +64,24 @@ export function RoomClient() {
     };
   }, [user, roomId, socket]);
 
-  const addSong = () => {
+  const addSong = (data: object) => {
+    if (!user) return;
     // your addSong implementation here
+    // Get yt video Id
+    // send a socket
+    const payload = {
+      id: uuid(),
+      author: user.name,
+      data,
+      room: roomId,
+    };
+    console.log(payload);
+    socket.emit("new-song", payload);
   };
 
   return (
     <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative min-h-[calc(100dvh-5rem)]">
-      <AddSongButton />
+      <AddSongButton addSong={addSong} />
       <div className="flex-1 bg-green-300"></div>
       <div>{roomId}</div>
       <div>{isAdmin ? <p>Admin</p> : <p>not admin</p>}</div>

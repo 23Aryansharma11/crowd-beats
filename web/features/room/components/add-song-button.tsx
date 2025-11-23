@@ -37,7 +37,7 @@ function useDebounce(value: string, delay: number = 200) {
   return debouncedValue;
 }
 
-export function AddSongButton() {
+export function AddSongButton({ addSong }: { addSong: (data: object) => void }) {
   // State to hold user input from the search field
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -171,7 +171,10 @@ export function AddSongButton() {
                 videos.map((video) => (
                   <div
                     key={video.videoId}
-                    className="mb-4 flex items-center gap-4 hover:bg-accent"
+                    className="mb-4 flex items-center gap-4 hover:bg-accent hover:cursor-pointer"
+                    onClick={() => {
+                      addSong(video);
+                    }}
                   >
                     <img
                       src={video.image}
