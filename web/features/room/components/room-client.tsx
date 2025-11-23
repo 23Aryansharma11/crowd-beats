@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client";
 import { Container } from "@/components/ui/container";
 import { type User } from "better-auth";
 import { Input } from "@/components/ui/input";
+import { AddSongButton } from "./add-song-button";
 
 export function RoomClient() {
   const [user, setUser] = useState<null | User>(null);
@@ -67,7 +68,9 @@ export function RoomClient() {
   }, [user, roomId]);
 
   return (
-    <Container className="h-full flex flex-col px-4 space-y-6 md:space-y-8">
+    <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative min-h-[calc(100dvh-5rem)]">
+      <AddSongButton />
+      <div className="flex-1 bg-green-300"></div>
       <div>{roomId}</div>
       <div>{isAdmin ? <p>Admin</p> : <p>not admin</p>}</div>
     </Container>

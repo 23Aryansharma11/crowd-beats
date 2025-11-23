@@ -1,9 +1,11 @@
 // server
+import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import { cors } from "hono/cors";
+import { cleanYTData } from "./lib/utils.js";
 const app = new Hono();
 
 app.use(
@@ -16,6 +18,33 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
+app.get("/api/search/yt/:searchTerm", async (c) => {
+  const { searchTerm } = c.req.param();
+  // call youtube
+  const response = await fetch(
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(
+      searchTerm
+    )}&key=${process.env.YOUTUBE_API_KEY}`
+  );
+
+  if (!response.ok) {
+    return c.json(
+      {
+        data: null,
+      },
+      404
+    );
+  }
+  const data = await response.json();
+  return c.json(
+    {
+      data: cleanYTData(data.items),
+    },
+    200
+  );
+});
+
+// sockets code
 const server = serve(
   {
     fetch: app.fetch,
@@ -28,7 +57,7 @@ const server = serve(
 const ioServer = new Server(server as HttpServer, {
   serveClient: false,
   cors: {
-    origin: "http://localhost:3000", 
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
     credentials: true,
   },
