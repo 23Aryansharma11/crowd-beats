@@ -100,7 +100,7 @@ export function RoomClient() {
   };
 
   return (
-    <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative overflow-hidden max-h-[calc(100dvh-5rem)]">
+    <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative overflow-hidden max-h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)]">
       <AddSongButton addSong={addSong} />
       <SongQueue queue={queue} />
       <div>{roomId}</div>
