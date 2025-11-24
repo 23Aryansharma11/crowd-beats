@@ -8,10 +8,15 @@ import { Container } from "@/components/ui/container";
 import { type User } from "better-auth";
 import { AddSongButton } from "./add-song-button";
 import { useSocket } from "@/hooks/use-socket";
+import { SongQueue } from "./song-queue";
+import { TSong } from "@/lib/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function RoomClient() {
   const [user, setUser] = useState<null | User>(null);
-  const socket = useSocket(); // use your custom socket hook
+  const [queue, setQueue] = useState<TSong[]>([]);
+
+  const socket = useSocket();
 
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -48,8 +53,9 @@ export function RoomClient() {
     socket.on("joined-room", (data) => {
       console.log("Joined room confirmed:", data);
     });
-    socket.on("new-song", (data) => {
+    socket.on("new-song", (data: TSong) => {
       console.log(data);
+      setQueue((prev) => [...prev, data]);
     });
     socket.on("error", (error) => {
       console.error("Socket error:", error);
@@ -59,10 +65,23 @@ export function RoomClient() {
     return () => {
       socket.off("connect", onConnect);
       socket.off("joined-room");
-      socket.off("error");
       socket.off("new-song");
+      socket.off("error");
     };
   }, [user, roomId, socket]);
+
+  // handle auto rearranging queue on any change in queue
+  useEffect(() => {
+    const sortedQueue = [...queue].sort((a, b) => b.upvotes - a.upvotes);
+
+    // Simple equality check: only update state if the order changed
+    const isSameOrder = queue.every(
+      (song, index) => song.id === sortedQueue[index].id
+    );
+    if (!isSameOrder) {
+      setQueue(sortedQueue);
+    }
+  }, [queue]);
 
   const addSong = (data: object) => {
     if (!user) return;
@@ -75,14 +94,15 @@ export function RoomClient() {
       data,
       room: roomId,
       isPlayed: false,
+      upvotes: 0,
     };
     socket.emit("add-song", payload);
   };
 
   return (
-    <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative min-h-[calc(100dvh-5rem)]">
+    <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative overflow-hidden max-h-[calc(100dvh-5rem)]">
       <AddSongButton addSong={addSong} />
-      <div className="flex-1 bg-green-300"></div>
+      <SongQueue queue={queue} />
       <div>{roomId}</div>
       <div>{isAdmin ? <p>Admin</p> : <p>not admin</p>}</div>
     </Container>

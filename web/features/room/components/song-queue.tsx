@@ -1,0 +1,30 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TSong } from "@/lib/types";
+
+export function SongQueue({ queue }: { queue: TSong[] }) {
+  return (
+    <div className="h-full w-full flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar">
+      {queue.map((song) => {
+        return (
+          <div
+            key={song.id}
+            className="mb-4 flex items-center gap-4 hover:bg-accent hover:cursor-pointer"
+          >
+            <img
+              src={song.data.image}
+              alt={song.data.title}
+              className="w-20 h-20 object-cover rounded"
+            />
+            <div>
+              <p className="font-semibold line-clamp-2">{song.data.title}</p>
+              <p className="text-sm font-extralight line-clamp-1 text-gray-700 dark:text-gray-400">
+                {song.data.description}
+              </p>
+              <p className="text-xs text-gray-600">{song.author}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
