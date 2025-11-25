@@ -94,7 +94,8 @@ export function RoomClient() {
       data,
       room: roomId,
       isPlayed: false,
-      upvotes: 0,
+      upvotes: 1,
+      upvotedBy: [user.id],
     };
     socketRef.current.emit("add-song", payload);
   };

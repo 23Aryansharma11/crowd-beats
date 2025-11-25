@@ -176,6 +176,7 @@ export function AddSongButton({
                     key={video.videoId + index}
                     className="mb-4 flex items-center gap-4 hover:bg-accent hover:cursor-pointer p-4"
                     onClick={() => {
+                      console.log(video);
                       addSong(video);
                     }}
                   >

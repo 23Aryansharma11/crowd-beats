@@ -105,7 +105,7 @@ ioServer.on("connection", (socket) => {
       socket.emit("error", { message: "Song already exists in room." });
       return;
     }
-
+    console.log(data);
     await producer.send({
       topic: "song-events",
       messages: [

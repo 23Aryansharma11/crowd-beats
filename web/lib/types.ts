@@ -5,6 +5,7 @@ export type TSong = {
   room: string;
   isPlayed: boolean;
   upvotes: number;
+  upvotedBy: string[];
   data: {
     videoId: string;
     image: string;
