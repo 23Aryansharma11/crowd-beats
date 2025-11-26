@@ -116,6 +116,26 @@ ioServer.on("connection", (socket) => {
       ],
     });
   });
+  socket.on("toggle-like", async (data) => {
+    console.log("like")
+    //     {
+    //   songId: '7b4a8d33-a6c6-486a-97b2-4328a4cb94e8',
+    //   userId: 'p12fWNMnxZRZkU6NwDtZ3MmFKqBUcK6U',
+    //   roomId: 'p12fWNMnxZRZkU6NwDtZ3MmFKqBUcK6U'
+    // }
+    await producer.send({
+      topic: "song-events",
+      messages: [
+        {
+          value: JSON.stringify({
+            type: "toggle-like",
+            roomId: data.roomId,
+            data,
+          }),
+        },
+      ],
+    });
+  });
   socket.on("clear-room", async (roomId) => {
     await producer.send({
       topic: "song-events",

@@ -4,14 +4,21 @@ import { User } from "better-auth";
 import { HeartIcon, HeartPulseIcon, User2Icon } from "lucide-react";
 import { PlayingLines } from "./playing-lines";
 
-export function SongQueue({ queue, user }: { queue: TSong[]; user: User }) {
+export function SongQueue({
+  queue,
+  user,
+  toggleLike,
+}: {
+  queue: TSong[];
+  user: User;
+  toggleLike: (songId: string) => void;
+}) {
   return (
     <div className="h-full w-full flex-1  overflow-y-auto custom-scrollbar py-4">
       {queue.map((song) => {
         let likedByMe = false;
         if (song.upvotedBy && song.upvotedBy.includes(user.id))
           likedByMe = true;
-
         return (
           <div
             key={song.id}
@@ -32,18 +39,27 @@ export function SongQueue({ queue, user }: { queue: TSong[]; user: User }) {
                   <User2Icon size={10} />
                   <span>{song.authorId === user.id ? "You" : song.author}</span>
                 </p>
-                <p className="flex justify-center items-center gap-4">
-                  {likedByMe ? (
-                    <HeartIcon
-                      className="text-red-500 fill-red-500"
-                      size={20}
-                    />
-                  ) : (
-                    <HeartIcon className="" size={20} />
-                  )}
-                  {song.upvotes || 0}
-                  {!song.isPlayed && <PlayingLines />}
-                </p>
+                {/* dont show for song that is playing */}
+                {!song.isPlayed && (
+                  <p
+                    className="flex justify-center items-center gap-4"
+                    onClick={() => {
+                      console.log("like")
+                      toggleLike(song.id);
+                    }}
+                  >
+                    {likedByMe ? (
+                      <HeartIcon
+                        className="text-red-500 fill-red-500"
+                        size={20}
+                      />
+                    ) : (
+                      <HeartIcon className="" size={20} />
+                    )}
+                    {song.upvotes || 0}
+                    {!song.isPlayed && <PlayingLines />}
+                  </p>
+                )}
               </div>
             </div>
           </div>

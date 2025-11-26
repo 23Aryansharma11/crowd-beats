@@ -96,6 +96,16 @@ export function RoomClient() {
     socketRef.current.emit("add-song", payload);
   };
 
+  const toggleLike = (songId: string) => {
+    if (!user || !socketRef.current) return;
+    const payload = {
+      songId,
+      userId: user.id,
+      roomId,
+    };
+    socketRef.current.emit("toggle-like", payload);
+  };
+
   return (
     <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative overflow-hidden max-h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)]">
       {
@@ -110,7 +120,7 @@ export function RoomClient() {
         )
       }
       <AddSongButton addSong={addSong} />
-      <SongQueue queue={queue} user={user!} />
+      <SongQueue queue={queue} user={user!} toggleLike={toggleLike} />
       <div>{roomId}</div>
     </Container>
   );

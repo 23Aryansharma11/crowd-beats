@@ -31,6 +31,13 @@ export async function initkafka(
           ioServer.in(event.roomId).emit("new-song", event.song);
           break;
 
+        case "toggle-like":
+          const { songId, userId, roomId } = event.data;
+
+          const allsongs = await redis.lrange(`room:${roomId}:songs`, 0, -1);
+          console.log(JSON.parse(allsongs[0]));
+          break;
+
         case "clear-room":
           await redis.del(`room:${event.roomId}:songs`);
           ioServer.in(event.roomId).emit("clear-queue");

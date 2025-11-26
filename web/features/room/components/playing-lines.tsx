@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 export function PlayingLines() {
   return (
-    <div className="flex justify-center items-center gap-0.5">
+    <span className="flex justify-center items-center gap-0.5">
       <motion.span
         initial={{ height: 12 }}
         animate={{ height: [12, 6, 12] }}
@@ -34,6 +34,6 @@ export function PlayingLines() {
         }}
         className="bg-red-500 w-px"
       ></motion.span>
-    </div>
+    </span>
   );
 }
