@@ -22,6 +22,7 @@ export async function initkafka(
   consumer.run({
     eachMessage: async ({ topic, message }) => {
       const event = JSON.parse(message.value!.toString());
+      console.time(`event-${event.type}-${event.data?.songId || event.roomId}`);
 
       switch (event.type) {
         case "add-song":
@@ -49,38 +50,35 @@ export async function initkafka(
           break;
 
         case "toggle-like":
-          const data = event.data;
-          const song = await getSong(data.songId);
-          const { upvotedBy } = song;
-          const isLikedByUser = upvotedBy.includes(data.userId);
+          const tData = event.data;
+          const tSong = await getSong(tData.songId);
+          const { upvotedBy } = tSong;
+          const isLikedByUser = upvotedBy.includes(tData.userId);
 
           if (isLikedByUser) {
             // Remove the userId from the upvotedBy array
-            song.upvotedBy = upvotedBy.filter(
-              (id: string) => id !== data.userId
+            tSong.upvotedBy = upvotedBy.filter(
+              (id: string) => id !== tData.userId
             );
-            song.upvotes -= 1;
+            tSong.upvotes -= 1;
           } else {
             // Add the userId
-            song.upvotedBy.push(data.userId);
-            song.upvotes += 1;
+            tSong.upvotedBy.push(tData.userId);
+            tSong.upvotes += 1;
           }
 
           // After toggling, save back to Redis hash
-          await redis.hset(`song:${data.songId}`, {
-            upvotes: song.upvotes.toString(),
-            upvotedBy: JSON.stringify(song.upvotedBy),
+          await redis.hset(`song:${tData.songId}`, {
+            upvotes: tSong.upvotes.toString(),
+            upvotedBy: JSON.stringify(tSong.upvotedBy),
           });
-
           // send to all clients
-          ioServer.in(event.roomId).emit("toggle-like", song);
+          ioServer.in(event.roomId).emit("toggle-like", tSong);
           break;
 
         case "play-song":
-          console.log("playing song");
           const pSongData = event.data;
           const pSong = await getSong(pSongData.songId);
-          console.log(pSong);
           pSong.isPlayed = true;
           await redis.hset(`song:${pSongData.songId}`, {
             isPlayed: JSON.stringify(true),
@@ -93,6 +91,9 @@ export async function initkafka(
           ioServer.in(event.roomId).emit("clear-queue");
           break;
       }
+      console.timeEnd(
+        `event-${event.type}-${event.data?.songId || event.roomId}`
+      );
     },
   });
 }

@@ -74,34 +74,48 @@ ioServer.on("error", (err) => {
 
 ioServer.on("connection", (socket) => {
   console.log(`${socket.id}: connected`);
-  // Called when user join room
 
   socket.on("join-room", async (data) => {
+    console.time(`join-room-${socket.id}`);
+
     const { userId, roomId } = data;
     if (!userId || !roomId) {
       socket.emit("error", { message: "Missing userId or roomId" });
+      console.timeEnd(`join-room-${socket.id}`);
       return;
     }
     socket.join(roomId);
+
+    console.time(`getAllSongsInRoom-${roomId}`);
     const parsedSongs = await getAllSongsInRoom(roomId);
+    console.timeEnd(`getAllSongsInRoom-${roomId}`);
+
     socket.emit("sync-queue", parsedSongs);
 
     socket.emit("joined-room", roomId);
-  });
-  socket.on("add-song", async (data) => {
-    // Get song IDs in room queue
-    const songIds = await redis.lrange(`room:${data.room}:queue`, 0, -1);
 
-    // Check duplicate videoId by fetching hashes one by one
+    console.timeEnd(`join-room-${socket.id}`);
+  });
+
+  socket.on("add-song", async (data) => {
+    console.time(`add-song-${data.id}`);
+
+    const songIds = await redis.lrange(`room:${data.room}:queue`, 0, -1);
+    console.time(`lrange-${data.room}`);
+    console.timeEnd(`lrange-${data.room}`);
+
     for (const id of songIds) {
+      console.time(`hgetall-${id}`);
       const songHash = await redis.hgetall(`song:${id}`);
+      console.timeEnd(`hgetall-${id}`);
+
       if (songHash.videoId === data.data.videoId) {
         socket.emit("error", { message: "Song already exists in room." });
+        console.timeEnd(`add-song-${data.id}`);
         return;
       }
     }
 
-    // No duplicate, send Kafka message
     await producer.send({
       topic: "song-events",
       messages: [
@@ -114,14 +128,13 @@ ioServer.on("connection", (socket) => {
         },
       ],
     });
+
+    console.timeEnd(`add-song-${data.id}`);
   });
 
   socket.on("toggle-like", async (data) => {
-    //     {
-    //   songId: '7b4a8d33-a6c6-486a-97b2-4328a4cb94e8',
-    //   userId: 'p12fWNMnxZRZkU6NwDtZ3MmFKqBUcK6U',
-    //   roomId: 'p12fWNMnxZRZkU6NwDtZ3MmFKqBUcK6U'
-    // }
+    console.time(`toggle-like-${data.songId}`);
+
     await producer.send({
       topic: "song-events",
       messages: [
@@ -134,16 +147,21 @@ ioServer.on("connection", (socket) => {
         },
       ],
     });
+
+    console.timeEnd(`toggle-like-${data.songId}`);
   });
-  // when admin plays a song
+
   socket.on("play-song", async (data) => {
+    console.time(`play-song-${data.songId}`);
+
     if (data.userId !== data.roomId) {
       socket.emit("error", {
         message: "Only room owner can perform this action",
       });
+      console.timeEnd(`play-song-${data.songId}`);
       return;
     }
-    console.log("playing song")
+
     await producer.send({
       topic: "song-events",
       messages: [
@@ -156,13 +174,8 @@ ioServer.on("connection", (socket) => {
         },
       ],
     });
-  });
 
-  socket.on("clear-room", async (roomId) => {
-    await producer.send({
-      topic: "song-events",
-      messages: [{ value: JSON.stringify({ type: "clear-room", roomId }) }],
-    });
+    console.timeEnd(`play-song-${data.songId}`);
   });
 });
 

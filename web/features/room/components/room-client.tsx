@@ -68,23 +68,29 @@ export function RoomClient() {
     // someone added a new song
     socket.on("new-song", (data: TSong) => {
       setQueue((prev) => {
-        // if no song was present then take the song and add it as playing song
-        if (prev.length == 0) {
+        // Add the new song
+        const updatedQueue = [...prev, data];
+
+        // If queue was empty before, set current playing song
+        if (!currentPlayingSong) {
           setCurrentPlayingSong(data.id);
-          // changePlayingSong
         }
 
-        return [...prev, data];
+        // Sort the updated queue before setting state
+        return sortQueue(updatedQueue);
       });
     });
+
     // when admin plays a song
     socket.on("play-song", (data: TSong) => {
+      console.log(data);
       setQueue((prevQueue) => {
         let songChanged = false;
         const updatedQueue = prevQueue.map((song) => {
           if (song.id === data.id) {
             if (song.isPlayed !== data.isPlayed) {
               songChanged = true;
+              song.isPlayed = data.isPlayed;
               return data;
             }
           }
@@ -98,9 +104,12 @@ export function RoomClient() {
         const isSameOrder =
           sortedQueue.length === prevQueue.length &&
           sortedQueue.every((song, index) => song.id === prevQueue[index].id);
-
+        console.log(sortQueue);
         return isSameOrder ? prevQueue : sortedQueue;
       });
+
+      setCurrentPlayingSong(data.id);
+      setIsPlaying(true);
     });
 
     // when someone likes a song
