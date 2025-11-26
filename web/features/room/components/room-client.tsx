@@ -10,6 +10,7 @@ import { type User } from "better-auth";
 import { AddSongButton } from "./add-song-button";
 import { SongQueue } from "./song-queue";
 import { TSong } from "@/lib/types";
+import { SongControls } from "./song-controls";
 
 export function RoomClient() {
   const [user, setUser] = useState<null | User>(null);
@@ -175,9 +176,18 @@ export function RoomClient() {
           ></iframe>
         )
       }
+      {/* admin controls */}
+      {user?.id === roomId && (
+        <SongControls
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        currentPlayingSong={currentPlayingSong}
+          setCurrentPlayingSong={setCurrentPlayingSong}
+        />
+      )}
       <AddSongButton addSong={addSong} />
       <SongQueue queue={queue || []} user={user!} toggleLike={toggleLike} />
-      <div>{roomId}</div>
+      {/* <div>{roomId}</div> */}
     </Container>
   );
 }
