@@ -1,7 +1,7 @@
 import { Kafka } from "kafkajs";
 import { Server, type DefaultEventsMap } from "socket.io";
 import { redis } from "./redis-config.js";
-import { getSong } from "./utils.js";
+import { getAllSongsInRoom, getSong } from "./utils.js";
 
 export const kafka = new Kafka({
   clientId: "app",
@@ -85,6 +85,22 @@ export async function initkafka(
             isPlayed: JSON.stringify(true),
           });
           ioServer.in(event.roomId).emit("play-song", pSong);
+          break;
+
+        case "play-next":
+          const pnData = event.data;
+          // remove from the list
+          await redis.lrem(`room:${pnData.roomId}:queue`, 0, pnData.oldSongId);
+          // remove from hashset
+          await redis.del(`song:${pnData.oldSongId}`);
+          await redis.hset(`song:${pnData.newSongId}`, "isPlayed", "true");
+
+          const allSongs = await getAllSongsInRoom(pnData.roomId);
+          const newPlayingSong = await getSong(pnData.newSongId);
+
+          ioServer.in(pnData.roomId).emit("play-next", newPlayingSong);
+          ioServer.in(pnData.roomId).emit("sync-queue", allSongs);
+
           break;
 
         case "clear-room":

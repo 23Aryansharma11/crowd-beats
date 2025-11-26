@@ -53,12 +53,24 @@ export function RoomClient() {
   // Remove duplicates by song id
   const uniqueById = (songs: TSong[]): TSong[] => {
     const seen = new Set<string>();
-    return songs.filter((s) => {
-      if (seen.has(s.id)) return false;
+    const filtered = songs.filter((s) => {
+      if (seen.has(s.id)) {
+        console.warn("Duplicate song id filtered:", s.id);
+        return false;
+      }
       seen.add(s.id);
       return true;
     });
+    return filtered;
   };
+
+  useEffect(() => {
+    if (!playerRef.current || !playerReady) return;
+    const currentSong = getSongById(currentPlayingSong);
+    if (currentSong?.data.videoId) {
+      playerRef.current.loadVideoById(currentSong.data.videoId);
+    }
+  }, [currentPlayingSong, playerReady]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -89,7 +101,7 @@ export function RoomClient() {
       console.log("Joined room confirmed:", data);
     });
 
-    socket.on("sync-queue", (songs: TSong[]) => {
+    socket.on("sync-first-queue", (songs: TSong[]) => {
       console.log(songs);
       const uniqueSongs = uniqueById(songs);
       const playing =
@@ -140,6 +152,31 @@ export function RoomClient() {
       setPlayingSong(song);
       setCurrentPlayingSong(song.id);
       setIsPlaying(true);
+    });
+
+    // socket.on("play-next", (song: TSong) => {
+    //   setPlayingSong(song);
+    //   setCurrentPlayingSong(song.id);
+    //   setIsPlaying(true);
+    // });
+
+    socket.on("sync-queue", (songs: TSong[]) => {
+      const uniqueSongs = uniqueById(songs);
+      console.log("first we get unique songs");
+      const playing =
+        uniqueSongs.find((s) => s.isPlayed) || uniqueSongs[0] || null;
+      console.log(
+        "Second we get playing by finding the one with isPlayed true"
+      );
+
+      setQueueHeap(buildHeapFromArray(uniqueSongs, playing?.id || null));
+      console.log("Third we update the heap");
+      // Update playingSong and currentPlayingSong outside of setPlayingSong functional update
+      if ((playingSong?.id || "") !== (playing?.id || "")) {
+        // setPlayingSong(playing);
+        // setCurrentPlayingSong(playing.id);
+        setIsPlaying(true);
+      }
     });
 
     socket.on("toggle-like", (song: TSong) => {
@@ -255,9 +292,30 @@ export function RoomClient() {
       setIsPlaying(true);
     }
   };
-
+  // used when 1. song is over 2. admin clicks on skip / play next button
+  // takes old song id and new song id goes to socket and redis
+  // removes the song from redis
+  // set new song id isPlayed to true
+  // returns
   const playNext = () => {
-    // Implement play next if needed
+    if (!socketRef.current || !user || !playingSong) return;
+    if (sortedQueue.length <= 1) {
+      console.log("No next song in queue");
+      return;
+    }
+
+    const oldSongId = playingSong.id;
+    const newSongId = sortedQueue[1].id;
+
+    setIsPlaying(false);
+    setPlayingSong(sortedQueue[1]);
+
+    socketRef.current.emit("play-next", {
+      oldSongId,
+      newSongId,
+      roomId,
+      userId: user.id,
+    });
   };
 
   const playSong = (songId: string) => {
@@ -292,9 +350,9 @@ export function RoomClient() {
 
   return (
     <Container className="h-full w-full flex flex-col px-4 space-y-6 md:space-y-8 relative overflow-hidden max-h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)]">
-      {user?.id === roomId && playingSong && (
+      {user?.id === roomId && playingSong && playingSong.data?.videoId && (
         <YouTube
-          videoId={playingSong.data.videoId || "2g811Eo7K8U"}
+          videoId={playingSong.data.videoId}
           opts={opts}
           onReady={onReady}
         />

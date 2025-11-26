@@ -3,6 +3,8 @@ import { User } from "better-auth";
 import { HeartIcon, HeartPulseIcon, User2Icon } from "lucide-react";
 import { PlayingLines } from "./playing-lines";
 
+import { v4 as uuid } from "uuid";
+
 export function SongQueue({
   queue,
   user,
@@ -20,12 +22,12 @@ export function SongQueue({
           likedByMe = true;
         return (
           <div
-            key={"queue" + song.id}
+            key={"queue" + uuid()}
             className="flex items-center gap-4 hover:bg-accent hover:cursor-pointer w-full h-full border-b-2 first:border-t-2 p-2"
           >
             <img
-              src={song.data.image}
-              alt={song.data.title}
+              src={song.data.image ?? "/placeholder.png"}
+              alt={song.data.title ?? "Unknown"}
               className="w-30 aspect-video object-cover rounded object-center"
             />
             <div className="w-full">
