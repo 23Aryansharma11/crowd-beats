@@ -331,7 +331,7 @@ export function RoomClient() {
     height: "390",
     width: "640",
     playerVars: {
-      controls: 1,
+      controls: 0,
       disablekb: 1,
       enablejsapi: 1,
       fs: 0,
