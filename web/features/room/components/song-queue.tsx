@@ -1,4 +1,3 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { TSong } from "@/lib/types";
 import { User } from "better-auth";
 import { HeartIcon, HeartPulseIcon, User2Icon } from "lucide-react";
