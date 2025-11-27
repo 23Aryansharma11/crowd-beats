@@ -13,6 +13,7 @@ import { UserBtn } from "@/features/auth/components/user-btn";
 
 export function Navbar({ className }: { className: string }) {
 	const { data: session } = authClient.useSession();
+	console.log(session?.user.id)
 	return (
 		<header
 			className={cn(

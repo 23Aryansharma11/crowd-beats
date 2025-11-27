@@ -42,7 +42,7 @@ export function ShowQrButton({ name, id }: { name: string; id: string }) {
               src: "/globe.svg",
               height: 40,
               width: 40,
-              excavate: false,
+              excavate: true,
             }}
             title="Crowd Beats"
           />
