@@ -89,23 +89,55 @@ export async function initkafka(
 
         case "play-next":
           const pnData = event.data;
-          // remove from the list
-          await redis.lrem(`room:${pnData.roomId}:queue`, 0, pnData.oldSongId);
-          // remove from hashset
+          const roomKey = `room:${pnData.roomId}:queue`;
+
+          // ✅ Get current queue BEFORE changes
+          const currentQueue = await redis.lrange(roomKey, 0, -1);
+
+          // ✅ Validate newSongId exists in queue
+          if (!currentQueue.includes(pnData.newSongId)) {
+            console.log("Invalid newSongId or last song, skipping");
+            // Still remove old song if it exists
+            await redis.lrem(roomKey, 0, pnData.oldSongId);
+            await redis.del(`song:${pnData.oldSongId}`);
+            const allSongs = await getAllSongsInRoom(pnData.roomId);
+            ioServer.in(pnData.roomId).emit("sync-queue", allSongs);
+            return;
+          }
+
+          // ✅ Normal flow: remove old, mark new as played
+          await redis.lrem(roomKey, 0, pnData.oldSongId);
           await redis.del(`song:${pnData.oldSongId}`);
           await redis.hset(`song:${pnData.newSongId}`, "isPlayed", "true");
 
           const allSongs = await getAllSongsInRoom(pnData.roomId);
           const newPlayingSong = await getSong(pnData.newSongId);
 
-          ioServer.in(pnData.roomId).emit("play-next", newPlayingSong);
+          ioServer.in(pnData.roomId).emit("play-song", newPlayingSong);
           ioServer.in(pnData.roomId).emit("sync-queue", allSongs);
-
           break;
 
         case "clear-queue":
-          await redis.del(`room:${event.roomId}:songs`);
-          ioServer.in(event.roomId).emit("clear-queue");
+          const roomId = event.roomId;
+          const roomk = `room:${roomId}:queue`;
+
+          // ✅ 1. Get all song IDs in queue
+          const songIds = await redis.lrange(roomk, 0, -1);
+
+          // ✅ 2. Delete all song hashes
+          for (const songId of songIds) {
+            await redis.del(`song:${songId}`);
+          }
+
+          // ✅ 3. Delete the entire queue list
+          await redis.del(roomk);
+
+          console.log(
+            `Cleared queue for room ${roomId}, deleted ${songIds.length} songs`
+          );
+
+          // ✅ 4. Notify all clients in room
+          ioServer.in(roomId).emit("clear-queue");
           break;
       }
       console.timeEnd(

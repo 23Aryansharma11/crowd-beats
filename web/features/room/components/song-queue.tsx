@@ -9,10 +9,12 @@ export function SongQueue({
   queue,
   user,
   toggleLike,
+  currentPlayingSong,
 }: {
   queue: TSong[];
   user: User;
   toggleLike: (songId: string) => void;
+  currentPlayingSong: string;
 }) {
   return (
     <div className="h-full w-full flex-1  overflow-y-auto custom-scrollbar py-4">
@@ -61,7 +63,9 @@ export function SongQueue({
                     {song.isPlayed && <PlayingLines />}
                   </p>
                 )}
-                {song.isPlayed && <PlayingLines />}
+                {song.isPlayed || currentPlayingSong == song.id ? (
+                  <PlayingLines />
+                ) : null}
               </div>
             </div>
           </div>

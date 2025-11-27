@@ -167,11 +167,23 @@ export function RoomClient() {
       setPlayerReady(false);
     });
 
-    // socket.on("play-next", (song: TSong) => {
-    //   setPlayingSong(song);
-    //   setCurrentPlayingSong(song.id);
-    //   setIsPlaying(true);
-    // });
+    socket.on("play-next", (song: TSong) => {
+      console.log("Received play-next:", song);
+      setQueueHeap((prevHeap) => {
+        if (!prevHeap) return prevHeap;
+        const newHeap = new MaxHeap<TSong>(comparator);
+        prevHeap
+          .toArray()
+          .filter((s) => s.id !== song.id)
+          .forEach((s) => newHeap.push(s));
+        return newHeap;
+      });
+      if (playerRef.current) playerRef.current.stopVideo();
+      setPlayingSong(song);
+      setCurrentPlayingSong(song.id);
+      setIsPlaying(true);
+      setPlayerReady(false);
+    });
 
     socket.on("sync-queue", (songs: TSong[]) => {
       const uniqueSongs = uniqueById(songs);
@@ -228,6 +240,27 @@ export function RoomClient() {
       alert(JSON.stringify(error));
     });
 
+socket.on("clear-queue", () => {
+  console.log("Queue cleared by admin");
+
+  // ✅ Safely stop player only if it exists and is ready
+  if (playerRef.current && playerReady) {
+    try {
+      playerRef.current.stopVideo();
+    } catch (error) {
+      console.log("Player already stopped or invalid, ignoring");
+    }
+  }
+
+  // ✅ Clear all state
+  setQueueHeap(null);
+  setPlayingSong(null);
+  setCurrentPlayingSong("");
+  setIsPlaying(false);
+  setPlayerReady(false);
+});
+
+
     socket.connect();
 
     return () => {
@@ -239,6 +272,7 @@ export function RoomClient() {
       socket.off("new-song");
       socket.off("toggle-like");
       socket.off("play-song");
+      socket.off("clear-queue");
       socket.off("error");
       socket.disconnect();
     };
@@ -334,16 +368,21 @@ export function RoomClient() {
   // returns
   const playNext = () => {
     if (!socketRef.current || !user || !playingSong) return;
+
+    // ✅ Don't emit if no next song
     if (sortedQueue.length <= 1) {
-      // toast no next song
+      console.log("No next song, clearing playing state");
+      setPlayingSong(null);
+      setCurrentPlayingSong("");
+      setIsPlaying(false);
+      // Optionally emit special "queue-empty" event
+      socketRef.current.emit("clear-queue", { roomId, userId: user.id });
       return;
     }
 
     const oldSongId = playingSong.id;
     const newSongId = sortedQueue[1].id;
-
     setIsPlaying(false);
-    setPlayingSong(sortedQueue[1]);
 
     socketRef.current.emit("play-next", {
       oldSongId,
@@ -412,7 +451,7 @@ export function RoomClient() {
       )}
 
       <AddSongButton addSong={addSong} />
-      <SongQueue queue={sortedQueue} user={user!} toggleLike={toggleLike} />
+      <SongQueue queue={sortedQueue} user={user!} toggleLike={toggleLike} currentPlayingSong={currentPlayingSong} />
     </Container>
   );
 }
