@@ -76,7 +76,7 @@ export function SongQueue({
                 </p>
 
                 {/* Like button - only show if not playing */}
-                {!song.isPlayed && (
+                {!song.isPlayed && currentPlayingSong != song.id && (
                   <button
                     className="flex items-center gap-2 p-2 hover:bg-red-50/50 dark:hover:bg-red-500/10 rounded-lg transition-all duration-200 -m-2"
                     onClick={(e) => {

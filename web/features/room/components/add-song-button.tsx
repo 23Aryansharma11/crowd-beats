@@ -107,7 +107,7 @@ export function AddSongButton({
       <DrawerTrigger asChild>
         <Button
           variant="default"
-          className="flex justify-center items-center gap-2 w-10 h-10 md:w-40 p-2 rounded-full md:rounded font-bold text-xl absolute bottom-0 right-10 z-20"
+          className="flex justify-center items-center gap-2 w-10 h-10 md:w-max p-1 rounded-full md:rounded font-bold text-md absolute bottom-0 right-10 z-20"
         >
           <PlusCircleIcon className="size-8" />
           <span className="hidden md:block">Add song</span>

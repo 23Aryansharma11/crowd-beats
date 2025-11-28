@@ -1,18 +1,21 @@
 "use client";
-import YouTube, { YouTubeProps } from "react-youtube";
-import { toast } from "sonner";
-import { useEffect, useState, useRef, useMemo } from "react";
-import { io, Socket } from "socket.io-client";
-import { v4 as uuid } from "uuid";
-import { useParams, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { Container } from "@/components/ui/container";
-import { type User } from "better-auth";
-import { AddSongButton } from "./add-song-button";
-import { SongQueue } from "./song-queue";
-import { TSong } from "@/lib/types";
-import { SongControls } from "./song-controls";
+
 import MaxHeap from "heap-js";
+import { v4 as uuid } from "uuid";
+import { type User } from "better-auth";
+import { io, Socket } from "socket.io-client";
+import YouTube, { YouTubeProps } from "react-youtube";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useRef, useMemo } from "react";
+
+import { toast } from "sonner";
+import { Container } from "@/components/ui/container";
+
+import { TSong } from "@/lib/types";
+import { SongQueue } from "./song-queue";
+import { authClient } from "@/lib/auth-client";
+import { SongControls } from "./song-controls";
+import { AddSongButton } from "./add-song-button";
 
 export function RoomClient() {
   const [user, setUser] = useState<null | User>(null);
@@ -93,7 +96,7 @@ export function RoomClient() {
 
     socket.on("connect", onConnect);
 
-    socket.on("joined-room", (data) => {});
+    socket.on("joined-room", () => {});
 
     socket.on("sync-first-queue", (songs: TSong[]) => {
       const uniqueSongs = uniqueById(songs);
@@ -218,9 +221,7 @@ export function RoomClient() {
     });
 
     socket.on("error", (error) => {
-      // toast error : {message: string}
       toast.error(error.message || "Something went wrong");
-      alert(JSON.stringify(error));
     });
 
     socket.on("clear-queue", () => {
@@ -255,14 +256,6 @@ export function RoomClient() {
       socket.disconnect();
     };
   }, [user, roomId]);
-
-  // useEffect(() => {
-  //   if (!playerRef.current) return;
-  //   const currentSong = getSongById(currentPlayingSong);
-  //   if (currentSong?.data.videoId) {
-  //     playerRef.current.loadVideoById(currentSong.data.videoId);
-  //   }
-  // }, [currentPlayingSong]);
 
   useEffect(() => {
     if (!playerRef.current || !playerReady) return;
@@ -337,7 +330,9 @@ export function RoomClient() {
       setIsPlaying(true);
     }
   };
-  // used when 1. song is over 2. admin clicks on skip / play next button
+  // used when 
+  // 1. song is over 
+  // 2. admin clicks on skip / play next button
   // takes old song id and new song id goes to socket and redis
   // removes the song from redis
   // set new song id isPlayed to true

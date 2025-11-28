@@ -18,9 +18,9 @@ export function ShowQrButton({ name, id }: { name: string; id: string }) {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="flex justify-center items-center gap-2 w-10 h-10 md:w-40 p-2 rounded-full md:rounded font-bold text-xl"
+          className="flex justify-center items-center gap-2 w-10 h-10 md:w-max p-1 rounded-full md:rounded font-bold text-md"
         >
-          <QrIcon className="size-8" />
+          <QrIcon className="size-6" />
           <span className="hidden md:block">Show QR</span>
         </Button>
       </DialogTrigger>

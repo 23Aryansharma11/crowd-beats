@@ -42,7 +42,7 @@ export default function RootLayout({
           <main className="mt-20 flex-1 w-full min-h-[calc(100dvh-5rem)] flex justify-center items-center">
             {children}
           </main>
-          <Toaster position="top-center" />
+          <Toaster position="top-center" richColors />
         </Provider>
       </body>
     </html>

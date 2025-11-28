@@ -5,6 +5,7 @@ import {
   PlayCircle,
   QrCode,
   Trash2,
+  TrashIcon,
 } from "lucide-react";
 import { ShowQrButton } from "./show-qr-button";
 
@@ -26,16 +27,16 @@ export function SongControls({
   togglePlay,
 }: TSongControlsProps) {
   return (
-    <div className="flex justify-center items-center gap-2 w-max h-max rounded-full md:rounded-2xl font-bold text-xl absolute bottom-0 left-10 z-20">
+    <div className="flex justify-center items-center gap-2 w-max h-max rounded-full md:rounded-2xl font-bold absolute bottom-0 left-10 z-20 ">
       <Button
         variant="secondary"
-        className="flex justify-center items-center gap-2 w-10 h-10 md:w-40 p-2 rounded-full md:rounded font-bold text-xl"
+        className="flex justify-center items-center gap-2 w-10 h-10 md:w-max p-1 rounded-full md:rounded font-bold text-md"
         onClick={togglePlay}
       >
         {isPlaying ? (
-          <PauseCircle className="size-8" />
+          <PauseCircle className="size-6" />
         ) : (
-          <PlayCircle className="size-8" />
+          <PlayCircle className="size-6" />
         )}
         <span className="hidden md:block">
           {isPlaying ? "Pause song" : "Play song"}
@@ -43,10 +44,10 @@ export function SongControls({
       </Button>
       <Button
         variant="ghost"
-        className="flex justify-center items-center gap-2 w-10 h-10 md:w-40 p-2 rounded-full md:rounded font-bold text-xl"
+        className="flex justify-center items-center gap-2 w-10 h-10 md:w-max p-1 rounded-full md:rounded font-bold text-md"
         onClick={playNext}
       >
-        <ArrowRightCircle className="size-8" />
+        <ArrowRightCircle className="size-6" />
         <span className="hidden md:block">Play Next</span>
       </Button>
       <ShowQrButton name={name} id={id} />
